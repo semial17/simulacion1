@@ -371,7 +371,7 @@
       // Algoritmo de exploración de parejas de divisores
       let m = -1, n = -1;
       let divisoresHtml = `<div class="divisors-box">
-        <strong>🔍 Desglose del algoritmo (Factores de q = ${q}):</strong><ul>`;
+        <strong>🔍 Desglose del algoritmo a most (Factores de q = ${q}):</strong><ul>`;
       
       for (let i = 1; i <= q; i++) {
         if (q % i === 0) {
@@ -432,7 +432,7 @@
         // Ficha a²
         grid.appendChild(createTile('a²', 'a2', 'Ficha a² (Dimensiones: a × a)'));
         
-        // Fichas a horizontales
+        // Fichas a horizontales 
         for(let i = 0; i < m; i++) {
           grid.appendChild(createTile('a', 'a-h', 'Ficha a (Dimensiones: 1 × a)'));
         }
@@ -478,6 +478,7 @@
       return div;
     }
 
+    
     simular();
   </script>
 </body>
