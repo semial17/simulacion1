@@ -127,7 +127,6 @@
       background: #334155;
     }
     
-    /* Leyenda visual */
     .legend {
       display: flex;
       gap: 15px;
@@ -150,7 +149,6 @@
       border-radius: 3px;
     }
 
-    /* Representación geométrica */
     .canvas-container {
       margin-top: 20px;
       display: flex;
@@ -195,7 +193,6 @@
       border-radius: 6px; 
     }
 
-    /* Animación de entrada de fichas */
     @keyframes tileAppear {
       from {
         opacity: 0;
@@ -228,7 +225,6 @@
     .a-v { background-color: var(--color-a); width: 100px; height: 45px; }
     .unit { background-color: var(--color-1); width: 45px; height: 45px; }
 
-    /* Mensajes y Tabla */
     .result { 
       margin-top: 15px; 
       padding: 15px; 
@@ -285,7 +281,6 @@
       padding: 0;
     }
 
-    /* Estilos para impresión / captura */
     @media print {
       body { background: white; padding: 0; }
       .card { box-shadow: none; border: none; max-width: 100%; }
@@ -353,12 +348,15 @@
     }
 
     function simular() {
-      const pInput = document.getElementById('pVal').value;
-      const qInput = document.getElementById('qVal').value;
-      const p = parseInt(pInput);
-      const q = parseInt(qInput);
+      const pElem = document.getElementById('pVal');
+      const qElem = document.getElementById('qVal');
       const output = document.getElementById('output');
       const canvas = document.getElementById('canvas');
+
+      if (!pElem || !qElem || !output || !canvas) return;
+
+      const p = parseInt(pElem.value);
+      const q = parseInt(qElem.value);
       
       canvas.innerHTML = '';
 
@@ -368,10 +366,9 @@
         return;
       }
 
-      // Algoritmo de exploración de parejas de divisores
       let m = -1, n = -1;
       let divisoresHtml = `<div class="divisors-box">
-        <strong>🔍 Desglose del algoritmo a most (Factores de q = ${q}):</strong><ul>`;
+        <strong>🔍 Desglose del algoritmo (Factores de q = ${q}):</strong><ul>`;
       
       for (let i = 1; i <= q; i++) {
         if (q % i === 0) {
@@ -429,15 +426,12 @@
         grid.id = 'grid';
         grid.style.gridTemplateColumns = `100px repeat(${m}, 45px)`;
 
-        // Ficha a²
         grid.appendChild(createTile('a²', 'a2', 'Ficha a² (Dimensiones: a × a)'));
         
-        // Fichas a horizontales 
         for(let i = 0; i < m; i++) {
           grid.appendChild(createTile('a', 'a-h', 'Ficha a (Dimensiones: 1 × a)'));
         }
 
-        // Fichas a verticales y unidades
         for(let j = 0; j < n; j++) {
           grid.appendChild(createTile('a', 'a-v', 'Ficha a (Dimensiones: a × 1)'));
           for(let i = 0; i < m; i++) {
@@ -478,8 +472,10 @@
       return div;
     }
 
-    
-    simular();
+    // Asegura la ejecución únicamente cuando la estructura HTML esté completamente cargada
+    document.addEventListener('DOMContentLoaded', function() {
+      simular();
+    });
   </script>
 </body>
 </html>
