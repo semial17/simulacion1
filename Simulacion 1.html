@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador del Modelo de Áreas</title>
+  <title>Simulador Avanzado del Modelo de Áreas</title>
   <style>
     :root {
       --primary: #2563eb;
@@ -15,7 +15,7 @@
       --color-1: #10b981;
     }
     body { 
-      font-family: Arial, sans-serif; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
       padding: 20px; 
       background: var(--bg-color); 
       color: #333; 
@@ -24,13 +24,14 @@
       background: var(--card-bg); 
       padding: 25px; 
       border-radius: 12px; 
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
-      max-width: 720px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+      max-width: 750px; 
       margin: auto; 
     }
     h2 { 
       margin-top: 0; 
       color: #1e293b; 
+      font-size: 22px;
       border-bottom: 2px solid #e2e8f0;
       padding-bottom: 10px;
     }
@@ -56,6 +57,16 @@
       text-align: center; 
       border: 1px solid #cbd5e1; 
       border-radius: 6px; 
+      outline: none;
+    }
+    input[type="number"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+    .range-info { 
+      font-size: 13px; 
+      color: #64748b; 
+      display: block; 
     }
     .presets {
       display: flex;
@@ -71,7 +82,20 @@
       font-size: 12px;
       border-radius: 4px;
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-preset:hover {
+      background: #cbd5e1;
+      color: #0f172a;
+    }
+    .btn-random {
+      background: #8b5cf6;
+      color: white;
+    }
+    .btn-random:hover {
+      background: #7c3aed;
+      color: white;
     }
     button.btn-main { 
       padding: 9px 20px; 
@@ -82,7 +106,27 @@
       border-radius: 6px; 
       cursor: pointer; 
       font-weight: bold; 
+      transition: background 0.2s; 
     }
+    button.btn-main:hover { 
+      background: var(--primary-hover); 
+    }
+    button.btn-secondary {
+      padding: 8px 14px;
+      font-size: 13px;
+      background: #475569;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 15px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    button.btn-secondary:hover {
+      background: #334155;
+    }
+    
     .legend {
       display: flex;
       gap: 15px;
@@ -92,11 +136,26 @@
       background: #f1f5f9;
       border-radius: 6px;
       font-size: 13px;
-      font-weight: bold;
+      font-weight: 600;
     }
-    .legend-item { display: flex; align-items: center; gap: 6px; }
-    .color-box { width: 16px; height: 16px; border-radius: 3px; }
-    .canvas-container { margin-top: 20px; display: flex; justify-content: center; }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .color-box {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+    }
+
+    .canvas-container {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: auto;
+    }
     .grid-wrapper {
       position: relative;
       padding: 35px 15px 15px 50px;
@@ -112,6 +171,7 @@
       text-align: center;
       font-weight: bold;
       color: var(--primary);
+      font-size: 16px;
     }
     .label-left {
       position: absolute;
@@ -123,18 +183,109 @@
       text-align: center;
       font-weight: bold;
       color: var(--primary);
+      font-size: 16px;
     }
-    #grid { display: grid; gap: 4px; background: #f8fafc; padding: 8px; border-radius: 6px; }
+    #grid { 
+      display: grid; 
+      gap: 4px; 
+      background: #f8fafc; 
+      padding: 8px; 
+      border-radius: 6px; 
+    }
+
+    @keyframes tileAppear {
+      from {
+        opacity: 0;
+        transform: scale(0.7);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
     .tile { 
-      display: flex; align-items: center; justify-content: center; 
-      font-weight: bold; border-radius: 4px; font-size: 14px; color: white; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-weight: bold; 
+      border-radius: 4px; 
+      font-size: 14px; 
+      color: white; 
+      animation: tileAppear 0.3s ease-out forwards;
+      transition: transform 0.15s, filter 0.15s;
+      cursor: pointer;
+    }
+    .tile:hover {
+      transform: scale(1.04);
+      filter: brightness(1.1);
     }
     .a2 { background-color: var(--color-a2); width: 100px; height: 100px; }
     .a-h { background-color: var(--color-a); width: 45px; height: 100px; }
     .a-v { background-color: var(--color-a); width: 100px; height: 45px; }
     .unit { background-color: var(--color-1); width: 45px; height: 45px; }
-    .result { margin-top: 15px; padding: 15px; background: #e0f2fe; border-left: 5px solid #0284c7; border-radius: 4px; line-height: 1.6; }
-    .error { margin-top: 15px; padding: 15px; background: #fee2e2; border-left: 5px solid #dc2626; border-radius: 4px; color: #991b1b; line-height: 1.6; }
+
+    .result { 
+      margin-top: 15px; 
+      padding: 15px; 
+      background: #e0f2fe; 
+      border-left: 5px solid #0284c7; 
+      border-radius: 4px; 
+      line-height: 1.6; 
+    }
+    .error { 
+      margin-top: 15px; 
+      padding: 15px; 
+      background: #fee2e2; 
+      border-left: 5px solid #dc2626; 
+      border-radius: 4px; 
+      color: #991b1b; 
+      line-height: 1.6; 
+    }
+    .warning { 
+      margin-top: 15px; 
+      padding: 15px; 
+      background: #fef3c7; 
+      border-left: 5px solid #d97706; 
+      border-radius: 4px; 
+      color: #92400e; 
+      line-height: 1.6; 
+    }
+    .table-breakdown {
+      width: 100%;
+      margin-top: 10px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .table-breakdown th, .table-breakdown td {
+      border: 1px solid #bae6fd;
+      padding: 6px 10px;
+      text-align: center;
+    }
+    .table-breakdown th {
+      background: #bae6fd;
+      color: #0369a1;
+    }
+
+    .divisors-box {
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #334155;
+    }
+    .divisors-box ul {
+      margin: 5px 0 0 18px;
+      padding: 0;
+    }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .card { box-shadow: none; border: none; max-width: 100%; }
+      .input-group, .legend, .btn-secondary, .presets { display: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -144,11 +295,12 @@
     <div class="input-group">
       <div class="input-row">
         <span>Polinomio: <strong>a² +</strong></span>
-        <input type="number" id="pVal" value="3" min="1" step="1">
+        <input type="number" id="pVal" value="3" min="1" step="1" placeholder="p">
         <span><strong>a +</strong></span>
-        <input type="number" id="qVal" value="2" min="1" step="1">
+        <input type="number" id="qVal" value="2" min="1" step="1" placeholder="q">
         <button class="btn-main" onclick="simular()">Simular</button>
       </div>
+      <small class="range-info">💡 Ingresa únicamente coeficientes enteros positivos (p ≥ 1, q ≥ 1).</small>
       
       <div class="presets">
         <span style="font-size: 12px; color: #64748b; align-self: center;">Casos de prueba:</span>
@@ -157,13 +309,23 @@
         <button class="btn-preset" onclick="cargarCaso(4,3)">Caso 3 (4, 3)</button>
         <button class="btn-preset" onclick="cargarCaso(2,2)">Caso 4 (2, 2)</button>
         <button class="btn-preset" onclick="cargarCaso(3,5)">Caso 5 (3, 5)</button>
+        <button class="btn-preset btn-random" onclick="generarAleatorio()">🎲 Caso Aleatorio</button>
       </div>
     </div>
 
     <div class="legend">
-      <div class="legend-item"><div class="color-box" style="background: var(--color-a2)"></div><span>a²</span></div>
-      <div class="legend-item"><div class="color-box" style="background: var(--color-a)"></div><span>a</span></div>
-      <div class="legend-item"><div class="color-box" style="background: var(--color-1)"></div><span>1</span></div>
+      <div class="legend-item">
+        <div class="color-box" style="background: var(--color-a2)"></div>
+        <span>a² (a × a)</span>
+      </div>
+      <div class="legend-item">
+        <div class="color-box" style="background: var(--color-a)"></div>
+        <span>a (1 × a)</span>
+      </div>
+      <div class="legend-item">
+        <div class="color-box" style="background: var(--color-1)"></div>
+        <span>1 (1 × 1)</span>
+      </div>
     </div>
 
     <div id="output"></div>
@@ -177,33 +339,77 @@
       simular();
     }
 
+    function generarAleatorio() {
+      const pAleatorio = Math.floor(Math.random() * 8) + 1;
+      const qAleatorio = Math.floor(Math.random() * 8) + 1;
+      document.getElementById('pVal').value = pAleatorio;
+      document.getElementById('qVal').value = qAleatorio;
+      simular();
+    }
+
     function simular() {
-      const p = parseInt(document.getElementById('pVal').value);
-      const q = parseInt(document.getElementById('qVal').value);
+      const pElem = document.getElementById('pVal');
+      const qElem = document.getElementById('qVal');
       const output = document.getElementById('output');
       const canvas = document.getElementById('canvas');
+
+      if (!pElem || !qElem || !output || !canvas) return;
+
+      const p = parseInt(pElem.value);
+      const q = parseInt(qElem.value);
       
       canvas.innerHTML = '';
 
       if (isNaN(p) || isNaN(q) || p < 1 || q < 1) {
-        output.className = 'error';
-        output.innerHTML = 'Ingrese coeficientes válidos (p ≥ 1, q ≥ 1).';
+        output.className = 'warning';
+        output.innerHTML = '<strong>⚠️ Coeficientes no válidos:</strong> Ingresa únicamente números enteros positivos (p ≥ 1 y q ≥ 1).';
         return;
       }
 
       let m = -1, n = -1;
+      let divisoresHtml = `<div class="divisors-box">
+        <strong>🔍 Desglose del algoritmo (Factores de q = ${q}):</strong><ul>`;
+      
       for (let i = 1; i <= q; i++) {
         if (q % i === 0) {
           let j = q / i;
-          if (i + j === p) {
-            m = i; n = j; break;
+          let suma = i + j;
+          let cumple = (suma === p);
+          
+          if (cumple && m === -1) {
+            m = i;
+            n = j;
           }
+          let icono = cumple ? '✅ (Suma ' + suma + ' = p)' : '❌ (Suma ' + suma + ' ≠ ' + p + ')';
+          divisoresHtml += `<li>Pareja (${i}, ${j}): ${i} × ${j} = ${q} | Suma = ${suma} ${icono}</li>`;
         }
       }
+      divisoresHtml += '</ul></div>';
 
       if (m !== -1) {
         output.className = 'result';
-        output.innerHTML = `<strong>✅ Factorización:</strong> a² + ${p}a + ${q} = (a + ${m})(a + ${n})`;
+        output.innerHTML = `
+          <strong>✅ Factorización Geométrica Exitosa:</strong><br>
+          • <strong>Dimensiones calculadas:</strong> Base = (a + ${m}), Altura = (a + ${n})<br>
+          • <strong>Expresión factorizada:</strong> a² + ${p}a + ${q} = (a + ${m})(a + ${n})<br>
+          
+          <table class="table-breakdown">
+            <thead>
+              <tr>
+                <th>Ficha</th>
+                <th>Área unitaria</th>
+                <th>Cantidad</th>
+                <th>Área total aportada</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Cuadrado a²</td><td>a²</td><td>1</td><td>a²</td></tr>
+              <tr><td>Rectángulo a</td><td>a</td><td>${p} (${m} horiz. + ${n} vert.)</td><td>${p}a</td></tr>
+              <tr><td>Cuadrado 1</td><td>1</td><td>${q} (${m} × ${n})</td><td>${q}</td></tr>
+            </tbody>
+          </table>
+          ${divisoresHtml}
+        `;
 
         const wrapper = document.createElement('div');
         wrapper.className = 'grid-wrapper';
@@ -220,32 +426,55 @@
         grid.id = 'grid';
         grid.style.gridTemplateColumns = `100px repeat(${m}, 45px)`;
 
-        grid.appendChild(createTile('a²', 'a2'));
-        for(let i = 0; i < m; i++) grid.appendChild(createTile('a', 'a-h'));
+        grid.appendChild(createTile('a²', 'a2', 'Ficha a² (Dimensiones: a × a)'));
+        
+        for(let i = 0; i < m; i++) {
+          grid.appendChild(createTile('a', 'a-h', 'Ficha a (Dimensiones: 1 × a)'));
+        }
 
         for(let j = 0; j < n; j++) {
-          grid.appendChild(createTile('a', 'a-v'));
-          for(let i = 0; i < m; i++) grid.appendChild(createTile('1', 'unit'));
+          grid.appendChild(createTile('a', 'a-v', 'Ficha a (Dimensiones: a × 1)'));
+          for(let i = 0; i < m; i++) {
+            grid.appendChild(createTile('1', 'unit', 'Ficha 1 (Dimensiones: 1 × 1)'));
+          }
         }
 
         wrapper.appendChild(labelTop);
         wrapper.appendChild(labelLeft);
         wrapper.appendChild(grid);
+        
+        const printBtn = document.createElement('button');
+        printBtn.className = 'btn-secondary';
+        printBtn.innerText = '📷 Vista de Impresión / Captura Limpia';
+        printBtn.onclick = function() {
+          window.print();
+        };
+
         canvas.appendChild(wrapper);
+        canvas.appendChild(printBtn);
+
       } else {
         output.className = 'error';
-        output.innerHTML = `<strong>❌ No factorizable:</strong> No existen enteros positivos tales que m × n = ${q} y m + n = ${p}.`;
+        output.innerHTML = `
+          <strong>❌ Imposible formar un rectángulo perfecto:</strong><br>
+          No existen números enteros positivos (m, n) tales que m × n = ${q} y m + n = ${p}.<br>
+          <em>Interpretación geométrica:</em> Las ${1 + p + q} fichas no se pueden organizar sin que sobren o falten espacios en la matriz.<br>
+          ${divisoresHtml}
+        `;
       }
     }
 
-    function createTile(text, cssClass) {
+    function createTile(text, cssClass, titleText) {
       const div = document.createElement('div');
       div.className = `tile ${cssClass}`;
       div.innerText = text;
+      div.title = titleText;
       return div;
     }
 
-    window.onload = simular;
+    document.addEventListener('DOMContentLoaded', function() {
+      simular();
+    });
   </script>
 </body>
 </html>
